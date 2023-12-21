@@ -1,0 +1,893 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+LAB2_Gray_Binary_Code.exe -- emu8086 assembler version: 4.08  
+ 
+[ 09/08/2023  --  14:16:31 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .MODEL medium
+[   2]        :                                       
+[   3]        :                                       .DATA
+[   4]        :                                       ;Definition of Variable
+[   5]    0000: 00                                    var     db  ?
+[   6]    0001: 0A                                    counter db 10
+[   7]        :                                       
+[   8]        :                                       ;Menu Strings
+[   9]    0002: 45 4E 54 45 52 3A 31 2E 42 69 6E 61   Menu        db "ENTER:1.Binary-Gray$"
+                72 79 2D 47 72 61 79 24             
+[  10]    0016: 32 2E 47 72 61 79 2D 42 69 6E 61 72   Menu2       db "2.Gray-Binary$"
+                79 24                               
+[  11]    0024: 20 45 43 45 20 4C 41 42 20 36 24      Header      db " ECE LAB 6$"
+[  12]    002F: 47 52 41 59 2D 42 49 4E 41 52 59 20   Header2     db "GRAY-BINARY CONVERTR$"
+                43 4F 4E 56 45 52 54 52 24          
+[  13]    0044: 45 6E 74 65 72 20 42 69 6E 61 72 79   Prompt1     db "Enter Binary Number$"
+                20 4E 75 6D 62 65 72 24             
+[  14]    0058: 45 6E 74 65 72 20 47 72 61 79 20 4E   Prompt2     db "Enter Gray Number$"
+                75 6D 62 65 72 24                   
+[  15]    006A: 47 72 61 79 20 65 71 75 69 76 61 6C   result1     db "Gray equivalent:$"
+                65 6E 74 3A 24                      
+[  16]    007B: 42 69 6E 61 72 79 20 65 71 75 69 76   result2     db "Binary equivalent$"
+                61 6C 65 6E 74 24                   
+[  17]    008D: 53 6F 72 72 79 2C 20 49 6E 76 61 6C   invalidentry  db "Sorry, Invalid entry$"
+                69 64 20 65 6E 74 72 79 24          
+[  18]        :                                       
+[  19]        :                                       	
+[  20]        :                                       	;Result bits
+[  21]    00A2: 00                                    	bit0 db ?
+[  22]    00A3: 00                                    	bit1 db ?
+[  23]    00A4: 00                                    	bit2 db ?
+[  24]    00A5: 00                                    	bit3 db ?
+[  25]    00A6: 00                                    	bit4 db ?
+[  26]    00A7: 00                                    	bit5 db ?
+[  27]    00A8: 00                                    	bit6 db ?
+[  28]    00A9: 00                                    	bit7 db ?
+[  29]        :                                       	
+[  30]    00AA: 00                                    	bit  db ?
+[  31]        :                                       
+[  32]        :                                       ;Port values
+[  33]    00AB: 00                                    PORTA_VAL DB 0
+[  34]    00AC: 00                                    PORTB_VAL DB 0
+[  35]    00AD: 00                                    PORTC_VAL DB 0
+[  36]    00AE: 00                                    KEY       DB ?
+[  37]        :                                       
+[  38]        :                                       ;Port Addresses
+[  39]        :                                       PORTA EQU 00H 	
+[  40]        :                                       	PORTB EQU 02H 	
+[  41]        :                                       	PORTC EQU 04H
+[  42]        :                                       	PCW   EQU 06H
+[  43]        :                                       
+[  44]        :                                       .STACK 128
+[  45]        :                                       ;----------------------------------------------------------------
+[  46]        :                                       ;This is a macro to set cursor position on the LCD
+[  47]        :                                       GOTO_XY MACRO x,y
+[  48]        :                                       MOV DL,y
+[  49]        :                                       MOV DH,x
+[  50]        :                                       CALL LCD_SET_CUR
+[  51]        :                                       ENDM
+[  52]        :                                       ;------------------------------------------------------------
+[  53]        :                                       .CODE
+[  54]        :                                       
+[  55]    0130:                                       main:  ;program starts here
+[  56]        :                                       ;Initialize data segment
+[  57]    0130: B8 00 00                              mov ax,@data
+[  58]    0133: 8E D8                                 mov ds,ax
+[  59]    0135: 8E C0                                 mov es,ax
+[  60]        :                                       
+[  61]        :                                       ;Send Control word to PPI
+[  62]    0137: BA 06 00                              mov dx,PCW
+[  63]    013A: B0 88                                 mov al,10001000b ; control word, mode 0
+[  64]    013C: EE                                    out dx,al
+[  65]        :                                       
+[  66]    013D: E8 A0 04                              call LCD_INIT     ;Initialize LCD
+[  67]    0140: E8 00 00                              call converter
+[  68]        :                                       
+[  69]    0143:                                       proc converter
+[  70]        :                                       	
+[  71]    0143: B2 01 B6 04 E8 42 05                  	GOTO_XY 4,1
+[  72]        :                                       	
+[  73]    014A: BE 24 00                              	LEA SI,Header
+[  74]    014D: E8 2B 05                              	CALL LCD_PRINTSTR
+[  75]    0150: B2 02 B6 01 E8 35 05                  	GOTO_XY 1,2
+[  76]        :                                       	
+[  77]    0157: BE 2F 00                              	LEA SI,Header2
+[  78]    015A: E8 1E 05                              	CALL LCD_PRINTSTR
+[  79]        :                                       	
+[  80]    015D: B9 60 EA                              	MOV CX,60000
+[  81]    0160: E8 FD 02                              	CALL DELAY   	
+[  82]    0163: B9 60 EA                              	MOV CX,60000
+[  83]    0166: E8 F7 02                              	CALL DELAY
+[  84]    0169: E8 E3 04                              	CALL LCD_CLEAR
+[  85]        :                                       	
+[  86]        :                                       	
+[  87]    016C:                                       begin:
+[  88]        :                                       		
+[  89]    016C: B2 01 B6 01 E8 19 05                  	GOTO_XY 1,1
+[  90]        :                                       	
+[  91]    0173: BE 02 00                              	LEA SI,Menu
+[  92]    0176: E8 02 05                              	CALL LCD_PRINTSTR
+[  93]    0179: B2 02 B6 01 E8 0C 05                  	GOTO_XY 1,2
+[  94]        :                                       	
+[  95]    0180: BE 16 00                              	LEA SI,Menu2
+[  96]    0183: E8 F5 04                              	CALL LCD_PRINTSTR
+[  97]        :                                       	
+[  98]    0186: E8 FA 02                              	CALL get_KeyPress
+[  99]    0189: E8 00 00                              call select
+[ 100]        :                                       endp
+[ 101]        :                                       	
+[ 102]        :                                       ;-----MENU SELECTION------------------
+[ 103]    018C:                                       select:
+[ 104]    018C: 80 3E 00 00 01                        cmp var, 1
+[ 105]    0191: 74 0E                                 je s1
+[ 106]    0193: 80 3E 00 00 02                        cmp var, 2
+[ 107]    0198: 74 0A                                 je s2
+[ 108]    019A: 80 3E 00 00 03                        cmp var, 3
+[ 109]    019F: 74 06                                 je s3
+[ 110]        :                                       
+[ 111]    01A1: E8 53 01                              s1: call Binary_Gray
+[ 112]    01A4: E8 04 00                              s2: call Gray_Binary
+[ 113]    01A7: E8 90 02                              s3: call Exit
+[ 114]    01AA: C3                                    ret
+[ 115]        :                                       endp
+[ 116]        :                                       ;-----------------------------------------------------------
+[ 117]    01AB:                                       proc Gray_Binary
+[ 118]    01AB: E8 A1 04                              CALL LCD_CLEAR
+[ 119]        :                                       	
+[ 120]    01AE: B2 01 B6 01 E8 D7 04                  	GOTO_XY 1,1
+[ 121]    01B5: BE 58 00                              	LEA SI,Prompt2
+[ 122]    01B8: E8 C0 04                              	CALL LCD_PRINTSTR
+[ 123]    01BB: B2 02 B6 01 E8 CA 04                  GOTO_XY 1,2
+[ 124]        :                                       
+[ 125]    01C2: C6 06 01 00 00                        mov counter,0
+[ 126]    01C7:                                       	keypress:
+[ 127]    01C7: E8 B9 02                              	call get_KeyPress
+[ 128]    01CA: E8 41 02                              	call checkvalid         ;check if entererd value is 0 or 1
+[ 129]        :                                       	; switch case
+[ 130]    01CD: 80 3E 01 00 00                        	    cmp counter,0
+[ 131]    01D2: 74 02                                 	    je b0
+[ 132]    01D4: 75 06                                 	    jne c1
+[ 133]    01D6: A0 00 00                              	      b0:mov al,var
+[ 134]    01D9: A2 A2 00                              	      mov bit0,al
+[ 135]        :                                       	
+[ 136]    01DC: 80 3E 01 00 01                        	 c1:cmp counter,1
+[ 137]    01E1: 74 02                                 	    je b1
+[ 138]    01E3: 75 0A                                 	    jne c2
+[ 139]    01E5: A0 00 00                              	      b1:mov al,var
+[ 140]    01E8: 32 06 A2 00                           	         xor al,bit0    	
+[ 141]    01EC: A2 A3 00                              	         mov bit1,al
+[ 142]        :                                       	
+[ 143]    01EF: 80 3E 01 00 02                        	 c2:cmp counter,2
+[ 144]    01F4: 74 02                                 	    je b2
+[ 145]    01F6: 75 0A                                 	    jne c3
+[ 146]    01F8: A0 00 00                              	      b2:mov al,var
+[ 147]    01FB: 32 06 A3 00                           	         xor al,bit1
+[ 148]    01FF: A2 A4 00                              	         mov bit2,al
+[ 149]        :                                       	
+[ 150]    0202: 80 3E 01 00 03                        	 c3:cmp counter,3
+[ 151]    0207: 74 02                                 	    je b3
+[ 152]    0209: 75 0C                                 	    jne c4
+[ 153]    020B: A0 00 00                              	      b3:mov al,var
+[ 154]    020E: 32 06 A4 00                           	         xor al,bit2
+[ 155]    0212: A2 A5 00                              	         mov bit3,al
+[ 156]    0215: 75 00                                 	    jne c4
+[ 157]    0217: 80 3E 01 00 04                        	 c4:cmp counter,4
+[ 158]    021C: 74 02                                 	    je b4
+[ 159]    021E: 75 0A                                 	    jne c5
+[ 160]    0220: A0 00 00                              	      b4:mov al,var
+[ 161]    0223: 32 06 A5 00                           	         xor al,bit3
+[ 162]    0227: A2 A6 00                              	         mov bit4,al
+[ 163]        :                                       	
+[ 164]    022A: 80 3E 01 00 05                        	 c5:cmp counter,5
+[ 165]    022F: 74 02                                 	    je b5
+[ 166]    0231: 75 0C                                 	    jne c6
+[ 167]    0233: A0 00 00                              	      b5:mov al,var
+[ 168]    0236: 32 06 A6 00                           	         xor al,bit4
+[ 169]    023A: A2 A7 00                              	         mov bit5,al
+[ 170]    023D: 75 00                                 	    jne c6
+[ 171]    023F: 80 3E 01 00 06                        	 c6:cmp counter,6
+[ 172]    0244: 74 02                                 	    je b6
+[ 173]    0246: 75 0A                                 	    jne c7
+[ 174]    0248: A0 00 00                              	      b6:mov al,var
+[ 175]    024B: 32 06 A7 00                           	         xor al,bit5
+[ 176]    024F: A2 A8 00                              	         mov bit6,al
+[ 177]        :                                       	
+[ 178]    0252: 80 3E 01 00 07                        	 c7:cmp counter,7
+[ 179]    0257: 74 02                                 	    je b7
+[ 180]    0259: 75 0A                                 	    jne c8
+[ 181]    025B: A0 00 00                              	      b7:mov al,var
+[ 182]    025E: 32 06 A8 00                           	         xor al,bit6
+[ 183]    0262: A2 A9 00                              	         mov bit7,al
+[ 184]        :                                       	
+[ 185]    0265: A0 01 00                              c8:	mov al,counter
+[ 186]    0268: 04 01                                 	add al,1
+[ 187]    026A: A2 01 00                              	mov counter,al
+[ 188]    026D: 80 3E 01 00 08                        	cmp counter,8    	
+[ 189]    0272: 74 03 E9 50 FF                        	jne keypress
+[ 190]    0277: 74 00                                 	je re
+[ 191]    0279:                                       	re:     	
+[ 192]    0279: E8 D3 03                              CALL LCD_CLEAR
+[ 193]    027C: B2 01 B6 01 E8 09 04                  GOTO_XY 1,1
+[ 194]    0283: BE 7B 00                              LEA SI,result2
+[ 195]    0286: E8 F2 03                              CALL LCD_PRINTSTR
+[ 196]    0289: EB 01                                 jmp result
+[ 197]    028B: C3                                    	ret	
+[ 198]        :                                       endp
+[ 199]        :                                       ;-------------------------------------------
+[ 200]        :                                       
+[ 201]    028C:                                       proc result
+[ 202]        :                                       
+[ 203]    028C: B2 02 B6 01 E8 F9 03                  GOTO_XY 1,2
+[ 204]        :                                       
+[ 205]    0293: A0 A2 00                              mov al,bit0
+[ 206]    0296: 04 30                                 add al,30h      ;covert to ascii
+[ 207]    0298: 8A E0                                 MOV AH,al
+[ 208]    029A: E8 B8 03                              CALL LCD_WRITE_CHAR
+[ 209]    029D: A0 A3 00                              mov al,bit1
+[ 210]    02A0: 04 30                                 add al,30h
+[ 211]    02A2: 8A E0                                 MOV AH,al
+[ 212]    02A4: E8 AE 03                              CALL LCD_WRITE_CHAR
+[ 213]    02A7: A0 A4 00                              mov al,bit2
+[ 214]    02AA: 04 30                                 add al,30h
+[ 215]    02AC: 8A E0                                 MOV AH,al
+[ 216]    02AE: E8 A4 03                              CALL LCD_WRITE_CHAR
+[ 217]    02B1: A0 A5 00                              mov al,bit3
+[ 218]    02B4: 04 30                                 add al,30h
+[ 219]    02B6: 8A E0                                 MOV AH,al
+[ 220]    02B8: E8 9A 03                              CALL LCD_WRITE_CHAR
+[ 221]    02BB: A0 A6 00                              mov al,bit4
+[ 222]    02BE: 04 30                                 add al,30h
+[ 223]    02C0: 8A E0                                 MOV AH,al
+[ 224]    02C2: E8 90 03                              CALL LCD_WRITE_CHAR
+[ 225]    02C5: A0 A7 00                              mov al,bit5
+[ 226]    02C8: 04 30                                 add al,30h
+[ 227]    02CA: 8A E0                                 MOV AH,al
+[ 228]    02CC: E8 86 03                              CALL LCD_WRITE_CHAR
+[ 229]    02CF: A0 A8 00                              mov al,bit6
+[ 230]    02D2: 04 30                                 add al,30h
+[ 231]    02D4: 8A E0                                 MOV AH,al
+[ 232]    02D6: E8 7C 03                              CALL LCD_WRITE_CHAR
+[ 233]    02D9: A0 A9 00                              mov al,bit7
+[ 234]    02DC: 04 30                                 add al,30h
+[ 235]    02DE: 8A E0                                 MOV AH,al
+[ 236]    02E0: E8 72 03                              CALL LCD_WRITE_CHAR
+[ 237]        :                                       	
+[ 238]    02E3:                                       rept:
+[ 239]    02E3: E8 9D 01                              call get_KeyPress
+[ 240]    02E6: 80 3E 00 00 16                        cmp var,22
+[ 241]    02EB: 75 03 E9 7C FE                        je  begin
+[ 242]    02F0: 74 03 E9 77 FE                        jne begin
+[ 243]    02F5: EB EC                                 jmp rept
+[ 244]        :                                       
+[ 245]        :                                       
+[ 246]        :                                       endp
+[ 247]        :                                       
+[ 248]        :                                       ;-----------------------------------------------
+[ 249]    02F7:                                       proc Binary_Gray
+[ 250]    02F7: E8 55 03                              CALL LCD_CLEAR
+[ 251]        :                                       	
+[ 252]    02FA: B2 01 B6 01 E8 8B 03                  	GOTO_XY 1,1
+[ 253]    0301: BE 44 00                              	LEA SI,Prompt1
+[ 254]    0304: E8 74 03                              	CALL LCD_PRINTSTR
+[ 255]    0307: B2 02 B6 01 E8 7E 03                  GOTO_XY 1,2
+[ 256]        :                                       
+[ 257]    030E: C6 06 01 00 00                        mov counter,0
+[ 258]    0313:                                       	press:
+[ 259]    0313: E8 6D 01                              	call get_KeyPress
+[ 260]    0316: E8 F5 00                              	call checkvalid
+[ 261]        :                                       	;case switch
+[ 262]    0319: 80 3E 01 00 00                        	    cmp counter,0
+[ 263]    031E: 74 02                                 	    je bb0
+[ 264]    0320: 75 06                                 	    jne cc1
+[ 265]    0322: A0 00 00                              	      bb0:mov al,var
+[ 266]    0325: A2 A2 00                              	      mov bit0,al
+[ 267]        :                                       	
+[ 268]    0328: 80 3E 01 00 01                        	 cc1:cmp counter,1
+[ 269]    032D: 74 02                                 	    je bb1
+[ 270]    032F: 75 12                                 	    jne cc2
+[ 271]    0331: A0 00 00                              	      bb1:mov al,var
+[ 272]    0334: 8A 1E 00 00                           	          mov bl,var
+[ 273]    0338: 32 06 A2 00                           	         xor al,bit0    	
+[ 274]    033C: A2 A3 00                              	         mov bit1,al
+[ 275]    033F: 88 1E AA 00                           	         mov bit,bl
+[ 276]        :                                       	
+[ 277]    0343: 80 3E 01 00 02                        	 cc2:cmp counter,2
+[ 278]    0348: 74 02                                 	    je bb2
+[ 279]    034A: 75 12                                 	    jne cc3
+[ 280]    034C: A0 00 00                              	      bb2:mov al,var
+[ 281]    034F: 8A 1E 00 00                           	          mov bl,var
+[ 282]    0353: 32 06 AA 00                           	         xor al,bit
+[ 283]    0357: 88 1E AA 00                           	         mov bit,bl
+[ 284]    035B: A2 A4 00                              	         mov bit2,al
+[ 285]        :                                       	
+[ 286]    035E: 80 3E 01 00 03                        	 cc3:cmp counter,3
+[ 287]    0363: 74 02                                 	    je bb3
+[ 288]    0365: 75 14                                 	    jne cc4
+[ 289]    0367: A0 00 00                              	      bb3:mov al,var
+[ 290]    036A: 8A 1E 00 00                           	          mov bl,var
+[ 291]    036E: 32 06 AA 00                           	         xor al,bit
+[ 292]    0372: A2 A5 00                              	         mov bit3,al
+[ 293]    0375: 88 1E AA 00                           	         mov bit,bl
+[ 294]    0379: 75 00                                 	    jne cc4
+[ 295]    037B: 80 3E 01 00 04                        	 cc4:cmp counter,4
+[ 296]    0380: 74 02                                 	    je bb4
+[ 297]    0382: 75 12                                 	    jne cc5
+[ 298]    0384: A0 00 00                              	      bb4:mov al,var
+[ 299]    0387: 8A 1E 00 00                           	          mov bl,var
+[ 300]    038B: 32 06 AA 00                           	         xor al,bit
+[ 301]    038F: A2 A6 00                              	         mov bit4,al
+[ 302]    0392: 88 1E AA 00                           	         mov bit,bl
+[ 303]        :                                       	
+[ 304]    0396: 80 3E 01 00 05                        	 cc5:cmp counter,5
+[ 305]    039B: 74 02                                 	    je bb5
+[ 306]    039D: 75 12                                 	    jne cc6
+[ 307]    039F: A0 00 00                              	      bb5:mov al,var
+[ 308]    03A2: 8A 1E 00 00                           	          mov bl,var
+[ 309]    03A6: 32 06 AA 00                           	         xor al,bit
+[ 310]    03AA: A2 A7 00                              	         mov bit5,al
+[ 311]    03AD: 88 1E AA 00                           	         mov bit,bl
+[ 312]    03B1: 80 3E 01 00 06                        	 cc6:cmp counter,6
+[ 313]    03B6: 74 02                                 	    je bb6
+[ 314]    03B8: 75 12                                 	    jne cc7
+[ 315]    03BA: A0 00 00                              	      bb6:mov al,var
+[ 316]    03BD: 8A 1E 00 00                           	          mov bl,var
+[ 317]    03C1: 32 06 AA 00                           	         xor al,bit
+[ 318]    03C5: A2 A8 00                              	         mov bit6,al
+[ 319]    03C8: 88 1E AA 00                           	         mov bit,bl
+[ 320]        :                                       	
+[ 321]    03CC: 80 3E 01 00 07                        	 cc7:cmp counter,7
+[ 322]    03D1: 74 02                                 	    je bb7
+[ 323]    03D3: 75 0E                                 	    jne cc8
+[ 324]    03D5: A0 00 00                              	      bb7:mov al,var
+[ 325]    03D8: 8A 1E 00 00                           	          mov bl,var
+[ 326]    03DC: 32 06 AA 00                           	         xor al,bit
+[ 327]    03E0: A2 A9 00                              	         mov bit7,al
+[ 328]        :                                       	
+[ 329]    03E3: A0 01 00                              cc8:mov al,counter
+[ 330]    03E6: 04 01                                 	add al,1
+[ 331]    03E8: A2 01 00                              	mov counter,al
+[ 332]    03EB: 80 3E 01 00 08                        	cmp counter,8    	
+[ 333]    03F0: 74 03 E9 1E FF                        	jne press
+[ 334]    03F5: 74 00                                 	je re2
+[ 335]    03F7:                                       	re2:     	
+[ 336]    03F7: E8 55 02                              	       CALL LCD_CLEAR
+[ 337]    03FA: B2 01 B6 01 E8 8B 02                  GOTO_XY 1,1
+[ 338]    0401: E8 4B 02                              CALL LCD_CLEAR
+[ 339]    0404: BE 6A 00                              LEA SI,result1
+[ 340]    0407: E8 71 02                              CALL LCD_PRINTSTR
+[ 341]    040A: E9 7F FE                              jmp result    	
+[ 342]        :                                       	
+[ 343]    040D: C3                                    ret                                         ;
+[ 344]        :                                       endp                                         ;
+[ 345]        :                                       ;--------------------------------------------------------
+[ 346]    040E:                                       proc checkvalid
+[ 347]    040E: 80 3E 00 00 00                        cmp var,0
+[ 348]    0413: 75 02                                 jne check2
+[ 349]    0415: 74 22                                 je return
+[ 350]        :                                       
+[ 351]    0417:                                       check2:
+[ 352]    0417: 80 3E 00 00 01                        cmp var,1
+[ 353]    041C: 75 02                                 jne invalid
+[ 354]    041E: 74 19                                 je return
+[ 355]    0420:                                       invalid:
+[ 356]    0420: E8 2C 02                              call LCD_CLEAR
+[ 357]    0423: B2 01 B6 01 E8 62 02                  GOTO_XY 1,1
+[ 358]    042A: BE 8D 00                              LEA SI,invalidentry
+[ 359]    042D: E8 4B 02                              CALL LCD_PRINTSTR
+[ 360]    0430: B9 60 EA                              MOV CX,60000
+[ 361]    0433: E8 2A 00                              CALL DELAY
+[ 362]    0436: E9 33 FD                              jmp begin
+[ 363]        :                                       
+[ 364]    0439:                                       return:
+[ 365]    0439: C3                                    ret
+[ 366]        :                                       
+[ 367]        :                                       endp
+[ 368]        :                                       ;-----------------------------------------------------
+[ 369]    043A:                                       proc Exit
+[ 370]        :                                       
+[ 371]    043A: E8 12 02                              CALL LCD_CLEAR
+[ 372]    043D: B2 01 B6 01 E8 48 02                  GOTO_XY 1,1
+[ 373]    0444: BE 24 00                              LEA SI,Header
+[ 374]    0447: E8 31 02                              CALL LCD_PRINTSTR
+[ 375]    044A: B9 60 EA                              MOV CX,60000
+[ 376]    044D: E8 10 00                              CALL DELAY
+[ 377]    0450: E8 FC 01                              CALL LCD_CLEAR
+[ 378]    0453: B2 02 B6 01 E8 32 02                  GOTO_XY 1,2
+[ 379]    045A: E8 26 00                              CALL get_KeyPress
+[ 380]    045D: E8 E3 FC                              CALL converter
+[ 381]        :                                       
+[ 382]        :                                       endp
+[ 383]        :                                       ;------------------------------------------------------------------
+[ 384]        :                                       ;------------------------------------------------------------------
+[ 385]        :                                       ;DELAY Procedure
+[ 386]    0460:                                       proc DELAY
+[ 387]        :                                       ;input: CX, this value controls the delay. CX=50 means 1ms
+[ 388]        :                                       ;output: none
+[ 389]    0460: E3 02                                 	JCXZ @DELAY_END
+[ 390]    0462:                                       	@DEL_LOOP:
+[ 391]    0462: E2 FE                                 	LOOP @DEL_LOOP	
+[ 392]    0464:                                       	@DELAY_END:
+[ 393]    0464: C3                                    	RET
+[ 394]        :                                       endp DELAY
+[ 395]        :                                       ;-------------------------------------------------------
+[ 396]        :                                       ;sends data to output port and saves them in a variable
+[ 397]        :                                       ;------------------------------------------------------
+[ 398]        :                                       ;input: AL
+[ 399]        :                                       ;output: PORTA_VAL
+[ 400]    0465:                                       PROC OUT_A
+[ 401]    0465: 52                                    	PUSH DX
+[ 402]    0466: BA 00 00                              	MOV DX,PORTA
+[ 403]    0469: EE                                    	OUT DX,AL
+[ 404]    046A: A2 AB 00                              	MOV PORTA_VAL,AL
+[ 405]    046D: 5A                                    	POP DX
+[ 406]    046E: C3                                    	RET	
+[ 407]        :                                       ENDP OUT_A
+[ 408]        :                                       ;----------------------------------
+[ 409]        :                                       ;input: AL
+[ 410]        :                                       ;output: PORTB_VAL
+[ 411]    046F:                                       PROC OUT_B	
+[ 412]    046F: 52                                    	PUSH DX
+[ 413]    0470: BA 02 00                              	MOV DX,PORTB
+[ 414]    0473: EE                                    	OUT DX,AL
+[ 415]    0474: A2 AC 00                              	MOV PORTB_VAL,AL
+[ 416]    0477: 5A                                    	POP DX
+[ 417]    0478: C3                                    	RET
+[ 418]        :                                       ENDP OUT_B
+[ 419]        :                                       ;---------------------------------
+[ 420]        :                                       ;Punction to output value in port C
+[ 421]        :                                       ;input: AL
+[ 422]        :                                       ;output: PORTC_VAL
+[ 423]    0479:                                       proc OUT_C	
+[ 424]    0479: 52                                    	PUSH DX
+[ 425]    047A: BA 04 00                              	MOV DX,PORTC
+[ 426]    047D: EE                                    	OUT DX,AL
+[ 427]    047E: A2 AD 00                              	MOV PORTC_VAL,AL
+[ 428]    0481: 5A                                    	POP DX
+[ 429]    0482: C3                                    	RET
+[ 430]        :                                       endp OUT_C
+[ 431]        :                                       ;----------------------------------
+[ 432]        :                                       ;-----------------------------------------------;
+[ 433]        :                                       ;                                               ;
+[ 434]        :                                       ;        KEY PRESS FUNCTION                     ;
+[ 435]        :                                       ;                                               ;
+[ 436]        :                                       ;-----------------------------------------------;
+[ 437]    0483:                                       proc get_KeyPress
+[ 438]    0483: 51                                    push cx
+[ 439]    0484:                                       keypad:
+[ 440]        :                                       ; MOV CX,00FFH            ; fill in the value of CX with 00ffH
+[ 441]    0484: B0 FE                                 MOV AL,11111110b        ; value = 1111 1110, set column 0 low
+[ 442]    0486: BA 04 00                              MOV DX,PORTC            ; mov PORTC to DX
+[ 443]    0489: EE                                    OUT DX,AL               ;Give this value to PORTA
+[ 444]        :                                       
+[ 445]    048A:                                       COLUMN0:
+[ 446]        :                                       	 ;Check ROW0
+[ 447]    048A: E4 04                                 IN AL,PORTC            ; Get PORTB value
+[ 448]    048C: A2 AE 00                              MOV KEY,AL
+[ 449]    048F: 80 3E AE 00 EE                        CMP KEY,11101110b      ; If PORTB =1111 1110 - button 1 Keypad is pressed?
+[ 450]    0494: 75 14                                 JNE ROW1               ; If not, go to ROW1
+[ 451]    0496: B9 20 4E                              MOV CX,20000           ; delay abit
+[ 452]    0499: E8 C4 FF                              CALL DELAY
+[ 453]    049C: B4 31                                 MOV AH,'1'             ; Output '1'
+[ 454]    049E: E8 B4 01                              CALL LCD_WRITE_CHAR
+[ 455]    04A1: B4 01                                 	 MOV AH,1
+[ 456]    04A3: 88 26 00 00                           	 MOV VAR,AH             ;store the key pressed
+[ 457]    04A7: E9 34 01                              JMP GOE                 ; continue loop
+[ 458]        :                                       
+[ 459]    04AA:                                       ROW1:
+[ 460]    04AA: 3C DE                                 CMP AL,11011110B       ; Is PORTB == 11011110B  or (4)Keypad button pressed?
+[ 461]    04AC: 75 14                                 JNE ROW2               ; If not, go to ROW2 of column 1
+[ 462]    04AE: B9 20 4E                              MOV CX,20000
+[ 463]    04B1: E8 AC FF                              	 CALL DELAY
+[ 464]    04B4: B4 34                                 MOV AH,'4'
+[ 465]    04B6: E8 9C 01                              	 CALL LCD_WRITE_CHAR
+[ 466]    04B9: B4 04                                 MOV AH,4
+[ 467]    04BB: 88 26 00 00                           	 MOV VAR,AH
+[ 468]    04BF: E9 1C 01                              JMP GOE                 ; Continue looop
+[ 469]        :                                       
+[ 470]    04C2:                                       ROW2:
+[ 471]    04C2: 3C BE                                 CMP AL,10111110B       ; Is PORTB == 10111110B or 7 Keypad button pressed?
+[ 472]    04C4: 75 14                                 JNE ROW3               ; If not, go to ROW3
+[ 473]    04C6: B9 20 4E                              MOV CX,20000
+[ 474]    04C9: E8 94 FF                              	 CALL DELAY
+[ 475]    04CC: B4 37                                 	 MOV AH,'7'
+[ 476]    04CE: E8 84 01                              	 CALL LCD_WRITE_CHAR
+[ 477]    04D1: B4 07                                 MOV AH,7
+[ 478]    04D3: 88 26 00 00                           	 MOV VAR,AH
+[ 479]    04D7: E9 04 01                              JMP GOE                 ; Go to GO
+[ 480]        :                                       
+[ 481]    04DA:                                       ROW3:
+[ 482]    04DA: 3C 7E                                 CMP AL,01111110B           ; Is PORTB == 01111110B or keypad star button pressed?
+[ 483]    04DC: 75 14                                 JNE GO                 ; continue loop
+[ 484]    04DE: B9 20 4E                              MOV CX,20000
+[ 485]    04E1: E8 7C FF                              	 CALL DELAY
+[ 486]    04E4: B4 2A                                 MOV AH,'*'
+[ 487]    04E6: E8 6C 01                              CALL LCD_WRITE_CHAR
+[ 488]    04E9: B4 0B                                 MOV AH,11
+[ 489]    04EB: 88 26 00 00                           	 MOV VAR,AH
+[ 490]    04EF: E9 EC 00                              	 JMP GOE
+[ 491]        :                                       
+[ 492]    04F2:                                       GO:
+[ 493]        :                                       ;LOOP COLUMN0             ; Looping to COLUMN1 is CX
+[ 494]        :                                       
+[ 495]    04F2: B9 FF 00                              MOV CX,00FFH            ; Initialize counter
+[ 496]    04F5: B0 FD                                 MOV AL,11111101B             ; value = 1111 1101, set column 1 low
+[ 497]    04F7: BA 04 00                              MOV DX,PORTC            ; enter PORTA to DX
+[ 498]    04FA: EE                                    OUT DX,AL               ; Give this value to PORTA
+[ 499]        :                                       
+[ 500]    04FB:                                       COLUMN1:
+[ 501]        :                                       
+[ 502]    04FB: E4 04                                 IN AL,PORTC
+[ 503]    04FD: A2 AE 00                              MOV KEY,AL
+[ 504]    0500: 80 3E AE 00 ED                        CMP KEY,11101101B      ; Is PORTB == 11101101B or 2 Keypad button pressed?
+[ 505]    0505: 75 14                                 JNE ROW11             ; If not, go to ROW12
+[ 506]    0507: B9 20 4E                              MOV CX,20000
+[ 507]    050A: E8 53 FF                              	 CALL DELAY
+[ 508]    050D: B4 32                                 MOV AH,'2'
+[ 509]    050F: E8 43 01                              	 CALL LCD_WRITE_CHAR
+[ 510]    0512: B4 02                                 	 MOV AH,2
+[ 511]    0514: 88 26 00 00                           	 MOV VAR,AH
+[ 512]    0518: E9 C3 00                              JMP GOE
+[ 513]        :                                       
+[ 514]    051B:                                       ROW11:
+[ 515]    051B: 3C FD                                 CMP AL,0FDH            ; Is PORTB == 0FDH or 5 Keypad button pressed?
+[ 516]    051D: 80 3E AE 00 DD                        CMP KEY,11011101B
+[ 517]    0522: 75 14                                 JNE ROW21              ; If not, go to ROW22
+[ 518]    0524: B9 20 4E                              MOV CX,20000
+[ 519]    0527: E8 36 FF                              	 CALL DELAY
+[ 520]    052A: B4 35                                 	 MOV AH,'5'
+[ 521]    052C: E8 26 01                              	 CALL LCD_WRITE_CHAR
+[ 522]    052F: B4 05                                 	 MOV AH,5
+[ 523]    0531: 88 26 00 00                           	 MOV VAR,AH
+[ 524]    0535: E9 A6 00                              JMP GOE
+[ 525]        :                                       
+[ 526]    0538:                                       ROW21:
+[ 527]    0538: 3C BD                                 CMP AL,10111101B            ; Is PORTB == 0F10111101BBH or keypad 8 keypad being pressed?
+[ 528]    053A: 75 14                                 JNE ROW31             ;If not, go to ROW32
+[ 529]    053C: B9 20 4E                              MOV CX,20000
+[ 530]    053F: E8 1E FF                              	 CALL DELAY
+[ 531]    0542: B4 38                                 	 MOV AH,'8'
+[ 532]    0544: E8 0E 01                              	 CALL LCD_WRITE_CHAR
+[ 533]    0547: B4 08                                 	 MOV AH,8
+[ 534]    0549: 88 26 00 00                           	 MOV VAR,AH
+[ 535]    054D: E9 8E 00                              JMP GOE                ; continue loop
+[ 536]        :                                       
+[ 537]    0550:                                       ROW31:
+[ 538]    0550: 3C 7D                                 CMP AL,01111101B           ; Is PORTB == 01111101B or keypad 0 keypad being pressed?
+[ 539]    0552: 75 13                                 JNE GO2                ; If not, go to GO2
+[ 540]    0554: B9 20 4E                              MOV CX,20000
+[ 541]    0557: E8 06 FF                              	 CALL DELAY
+[ 542]    055A: B4 30                                 	 MOV AH,'0'
+[ 543]    055C: E8 F6 00                              	 CALL LCD_WRITE_CHAR
+[ 544]    055F: B4 00                                 	 MOV AH,0
+[ 545]    0561: 88 26 00 00                           	 MOV VAR,AH
+[ 546]    0565: EB 77                                 JMP GOE
+[ 547]        :                                       
+[ 548]    0567:                                       GO2:
+[ 549]        :                                       ;LOOP COLUMN1            ; Looping to COLUMN2 is CX
+[ 550]        :                                       
+[ 551]    0567: B9 FF 00                              MOV CX,00FFH            ; fill in the value of CX with 00ffH
+[ 552]    056A: B0 FB                                 MOV AL,11111011B             ; value = 1111 1011, set column 2 low
+[ 553]    056C: BA 04 00                              MOV DX,PORTC            ; enter PORTC to DX
+[ 554]    056F: EE                                    OUT DX,AL               ; Give this value to PORTC
+[ 555]        :                                       
+[ 556]    0570:                                       COLUMN2:
+[ 557]        :                                       
+[ 558]    0570: E4 04                                 IN AL,PORTC            ; Get PORTB value
+[ 559]    0572: A2 AE 00                              MOV KEY,AL
+[ 560]    0575: 80 3E AE 00 EB                        CMP KEY,11101011B      ; Is PORTB == 11101011B or button 3 Keypad is pressed?
+[ 561]    057A: 75 13                                 JNE ROW12             ; If not, go to ROW13
+[ 562]    057C: B9 20 4E                              MOV CX,20000
+[ 563]    057F: E8 DE FE                              	 CALL DELAY
+[ 564]    0582: B4 33                                 	 MOV AH,'3'
+[ 565]    0584: E8 CE 00                              	 CALL LCD_WRITE_CHAR
+[ 566]    0587: B4 03                                 	 MOV AH,3
+[ 567]    0589: 88 26 00 00                           	 MOV VAR,AH
+[ 568]    058D: EB 4F                                 JMP GOE                ; Continue loop
+[ 569]        :                                       
+[ 570]    058F:                                       ROW12:
+[ 571]    058F: 80 3E AE 00 DB                        CMP KEY,11011011B    ; Is PORTB == 11011011B or 6 Keypad button pressed?
+[ 572]    0594: 75 13                                 JNE ROW22            ;If not, go to ROW23
+[ 573]    0596: B9 20 4E                              MOV CX,20000
+[ 574]    0599: E8 C4 FE                              	 CALL DELAY
+[ 575]    059C: B4 36                                 	 MOV AH,'6'
+[ 576]    059E: E8 B4 00                              	 CALL LCD_WRITE_CHAR
+[ 577]    05A1: B4 06                                 	 MOV AH,6
+[ 578]    05A3: 88 26 00 00                           	 MOV VAR,AH
+[ 579]    05A7: EB 35                                 JMP GOE                ; continue loop
+[ 580]        :                                       
+[ 581]    05A9:                                       ROW22:
+[ 582]    05A9: 80 3E AE 00 BB                        CMP KEY,10111011B     ; Is PORTB == 10111011B or keypad 9 key pressed?
+[ 583]    05AE: 75 13                                 JNE ROW32             ; If not, go to ROW33
+[ 584]    05B0: B9 20 4E                              MOV CX,20000
+[ 585]    05B3: E8 AA FE                              	 CALL DELAY
+[ 586]    05B6: B4 39                                 	 MOV AH,'9'
+[ 587]    05B8: E8 9A 00                              	 CALL LCD_WRITE_CHAR
+[ 588]    05BB: B4 09                                 	 MOV AH,9
+[ 589]    05BD: 88 26 00 00                           	 MOV VAR,AH
+[ 590]    05C1: EB 1B                                 JMP GOE                ; Continue loop
+[ 591]        :                                       
+[ 592]    05C3:                                       ROW32:               ; Is PORTB == 0F7H or Keypad # button pressed?
+[ 593]    05C3: 80 3E AE 00 7B                        CMP KEY,01111011B
+[ 594]    05C8: 75 11                                 JNE GO3
+[ 595]    05CA: B9 20 4E                              MOV CX,20000
+[ 596]    05CD: E8 90 FE                              CALL DELAY
+[ 597]    05D0: A0 00 00                              MOV AL,VAR
+[ 598]        :                                       ;PUSH AX
+[ 599]    05D3: B4 16                                 MOV AH,22
+[ 600]    05D5: 88 26 00 00                           MOV VAR,AH
+[ 601]    05D9: EB 03                                 JMP GOE
+[ 602]        :                                       
+[ 603]    05DB:                                       GO3:
+[ 604]        :                                       ;LOOP COLUMN2            ; Looping to COLUMN2 by CX
+[ 605]    05DB: E9 A6 FE                              JMP keypad               ; Repeat the program again
+[ 606]        :                                       
+[ 607]    05DE:                                       GOE:
+[ 608]        :                                       ;CMP VAR,22
+[ 609]        :                                       ;JNE keypad
+[ 610]        :                                       ;POP AX
+[ 611]        :                                       ;MOV VAR,AL
+[ 612]    05DE: 59                                    pop cx
+[ 613]    05DF: C3                                    ret
+[ 614]        :                                       endp
+[ 615]        :                                       
+[ 616]        :                                       ;-----------------------------------------------;
+[ 617]        :                                       ;                                               ;
+[ 618]        :                                       ;        LCD LIBRARY FUNCTIONS                  ;
+[ 619]        :                                       ;                                               ;
+[ 620]        :                                       ;-----------------------------------------------;
+[ 621]        :                                       ;-----------------------------------------------------
+[ 622]        :                                       ; LCD INITIALIZATION
+[ 623]        :                                       ;input: none
+[ 624]        :                                       ;output: none
+[ 625]    05E0:                                       PROC LCD_INIT
+[ 626]        :                                       ;make RS=En=RW=0
+[ 627]    05E0: B0 00                                 	MOV AL,0
+[ 628]    05E2: E8 8A FE                              	CALL OUT_B
+[ 629]        :                                       ;delay 20ms
+[ 630]    05E5: B9 E8 03                              	MOV CX,1000
+[ 631]    05E8: E8 75 FE                              	CALL DELAY
+[ 632]        :                                       ;reset sequence
+[ 633]    05EB: B4 30                                 	MOV AH,30H
+[ 634]    05ED: E8 31 00                              	CALL LCD_CMD
+[ 635]    05F0: B9 FA 00                              	MOV CX,250
+[ 636]    05F3: E8 6A FE                              	CALL DELAY
+[ 637]        :                                       	
+[ 638]    05F6: B4 30                                 	MOV AH,30H
+[ 639]    05F8: E8 26 00                              	CALL LCD_CMD
+[ 640]    05FB: B9 32 00                              	MOV CX,50
+[ 641]    05FE: E8 5F FE                              	CALL DELAY
+[ 642]        :                                       	
+[ 643]    0601: B4 30                                 	MOV AH,30H
+[ 644]    0603: E8 1B 00                              	CALL LCD_CMD
+[ 645]    0606: B9 F4 01                              	MOV CX,500
+[ 646]    0609: E8 54 FE                              	CALL DELAY
+[ 647]        :                                       	
+[ 648]        :                                       ;function set
+[ 649]    060C: B4 38                                 	MOV AH,38H                ;8 BIT 2 LINE 5*7 DOTS
+[ 650]    060E: E8 10 00                              	CALL LCD_CMD
+[ 651]        :                                       	                          ;DISPLAY ON CUSOR OFF
+[ 652]    0611: B4 0C                                 	MOV AH,0CH
+[ 653]    0613: E8 0B 00                              	CALL LCD_CMD
+[ 654]        :                                       	
+[ 655]    0616: B4 01                                 	MOV AH,01H                ;CLEAR DISPLAY
+[ 656]    0618: E8 06 00                              	CALL LCD_CMD
+[ 657]        :                                       	
+[ 658]    061B: B4 06                                 	MOV AH,06H                ;ENTRY MODE
+[ 659]    061D: E8 01 00                              	CALL LCD_CMD
+[ 660]        :                                       	
+[ 661]    0620: C3                                    	RET	
+[ 662]        :                                       ENDP LCD_INIT
+[ 663]        :                                       
+[ 664]        :                                       ;-----------------------------------------------
+[ 665]        :                                       ;SEND COMMAND to LCD
+[ 666]        :                                       ;input: AH = command code
+[ 667]        :                                       ;output: none
+[ 668]    0621:                                       PROC LCD_CMD
+[ 669]        :                                       ;save registers
+[ 670]    0621: 52                                    	PUSH DX
+[ 671]    0622: 50                                    	PUSH AX
+[ 672]        :                                       ;make rs=0
+[ 673]    0623: A0 AC 00                              	MOV AL,PORTB_VAL
+[ 674]    0626: 24 FD                                 	AND AL,0FDH		;En-RS-RW   ;DATA TO SELECT INSTRUCTION REGISTER BY MAKING RS 0 AND RW 1(READ)
+[ 675]    0628: E8 44 FE                              	CALL OUT_B
+[ 676]        :                                       ;set out data pins
+[ 677]    062B: 8A C4                                 	MOV AL,AH
+[ 678]    062D: E8 35 FE                              	CALL OUT_A
+[ 679]        :                                       ;make En=1
+[ 680]    0630: A0 AC 00                              	MOV AL,PORTB_VAL
+[ 681]    0633: 0C 04                                 	OR	AL,100B		;En-RS-RW   ;DATA TO MAKE ENABLE 1
+[ 682]    0635: E8 37 FE                              	CALL OUT_B
+[ 683]        :                                       ;delay 1ms
+[ 684]    0638: B9 32 00                              	MOV CX,50
+[ 685]    063B: E8 22 FE                              	CALL DELAY
+[ 686]        :                                       ;make En=0
+[ 687]    063E: A0 AC 00                              	MOV AL,PORTB_VAL
+[ 688]    0641: 24 FB                                 	AND AL,0FBH		;En-RS-RW   ;DATA TO MAKE ENABLE 0 AND SELECT DATA REGISTER BY MAKING RS 1 AND RW 1(READ)
+[ 689]    0643: E8 29 FE                              	CALL OUT_B
+[ 690]        :                                       ;delay 1ms
+[ 691]    0646: B9 32 00                              	MOV CX,50
+[ 692]    0649: E8 14 FE                              	CALL DELAY
+[ 693]        :                                       ;restore registers
+[ 694]    064C: 58                                    	POP AX
+[ 695]    064D: 5A                                    	POP DX	
+[ 696]    064E: C3                                    	RET
+[ 697]        :                                       ENDP LCD_CMD
+[ 698]        :                                       
+[ 699]        :                                       
+[ 700]        :                                       ;----------------------------------------------
+[ 701]        :                                       ;CLEAR DISPLAY
+[ 702]    064F:                                       PROC LCD_CLEAR
+[ 703]    064F: B4 01                                 	MOV AH,1             ; CLEAR DISPLAY
+[ 704]    0651: E8 CD FF                              	CALL LCD_CMD
+[ 705]    0654: C3                                    	RET	
+[ 706]        :                                       ENDP LCD_CLEAR
+[ 707]        :                                       
+[ 708]        :                                       ;--------------------------------------------
+[ 709]        :                                       ;WRITE A CHARACTER on current cursor position
+[ 710]        :                                       ;input: AH
+[ 711]        :                                       ;output: none
+[ 712]    0655:                                       PROC LCD_WRITE_CHAR
+[ 713]        :                                       ;save registers
+[ 714]    0655: 50                                    	PUSH AX
+[ 715]        :                                       ;set RS=1                ;DATA REG
+[ 716]    0656: A0 AC 00                              	MOV AL,PORTB_VAL
+[ 717]    0659: 0C 02                                 	OR	AL,10B		;EN-RS-RW
+[ 718]    065B: E8 11 FE                              	CALL OUT_B
+[ 719]        :                                       ;set out the data pins
+[ 720]    065E: 8A C4                                 	MOV AL,AH
+[ 721]    0660: E8 02 FE                              	CALL OUT_A
+[ 722]        :                                       ;set En=1
+[ 723]    0663: A0 AC 00                              	MOV AL,PORTB_VAL
+[ 724]    0666: 0C 04                                 	OR	AL,100B		;EN-RS-RW
+[ 725]    0668: E8 04 FE                              	CALL OUT_B
+[ 726]        :                                       ;delay 1ms
+[ 727]    066B: B9 32 00                              	MOV CX,50
+[ 728]    066E: E8 EF FD                              	CALL DELAY
+[ 729]        :                                       ;set En=0
+[ 730]    0671: A0 AC 00                              	MOV AL,PORTB_VAL
+[ 731]    0674: 24 FB                                 	AND	AL,0FBH		;EN-RS-RW
+[ 732]    0676: E8 F6 FD                              	CALL OUT_B
+[ 733]        :                                       ;return
+[ 734]    0679: 58                                    	POP AX
+[ 735]    067A: C3                                    	RET	
+[ 736]        :                                       ENDP LCD_WRITE_CHAR
+[ 737]        :                                       
+[ 738]        :                                       ;--------------------------------------
+[ 739]        :                                       ;PRINT STRING on current cursor position
+[ 740]        :                                       ;input: SI=string address, string should end with '$'
+[ 741]        :                                       ;output: none
+[ 742]    067B:                                       PROC LCD_PRINTSTR
+[ 743]        :                                       ;save registers
+[ 744]    067B: 56                                    	PUSH SI
+[ 745]    067C: 50                                    	PUSH AX
+[ 746]        :                                       ;read and write character
+[ 747]    067D:                                       	@LCD_PRINTSTR_LT:
+[ 748]    067D: AC                                    		LODSB
+[ 749]    067E: 3C 24                                 		CMP AL,'$'
+[ 750]    0680: 74 07                                 		JE @LCD_PRINTSTR_EXIT
+[ 751]    0682: 8A E0                                 		MOV AH,AL
+[ 752]    0684: E8 CE FF                              		CALL LCD_WRITE_CHAR	
+[ 753]    0687: EB F4                                 	JMP @LCD_PRINTSTR_LT
+[ 754]        :                                       	
+[ 755]        :                                       ;return
+[ 756]    0689:                                       	@LCD_PRINTSTR_EXIT:
+[ 757]    0689: 58                                    	POP AX
+[ 758]    068A: 5E                                    	POP SI
+[ 759]    068B: C3                                    	RET	
+[ 760]        :                                       ENDP LCD_PRINTSTR
+[ 761]        :                                       
+[ 762]        :                                       ;-------------------------------------
+[ 763]        :                                       ;SET CURSOR
+[ 764]        :                                       ;input: DL=ROW, DH=COL
+[ 765]        :                                       ;		DL = 1, means upper row
+[ 766]        :                                       ;		DL = 2, means lower row
+[ 767]        :                                       ;		DH = 1-16, 1st column is 1
+[ 768]        :                                       ;output: none
+[ 769]    068C:                                       PROC LCD_SET_CUR
+[ 770]        :                                       ;save registers
+[ 771]    068C: 50                                    	PUSH AX
+[ 772]        :                                       ;LCD uses 0 based column index
+[ 773]    068D: FE CE                                 	DEC DH
+[ 774]        :                                       ;select case	
+[ 775]    068F: 80 FA 01                              	CMP DL,1
+[ 776]    0692: 74 07                                 	JE	@ROW1
+[ 777]    0694: 80 FA 02                              	CMP DL,2
+[ 778]    0697: 74 06                                 	JE	@ROW2
+[ 779]    0699: EB 0D                                 	JMP @LCD_SET_CUR_END
+[ 780]        :                                       	
+[ 781]        :                                       ;if DL==1 then
+[ 782]    069B:                                       	@ROW1:
+[ 783]    069B: B4 80                                 		MOV AH,80H
+[ 784]    069D: EB 04                                 	JMP @LCD_SET_CUR_ENDCASE
+[ 785]        :                                       	
+[ 786]        :                                       ;if DL==2 then
+[ 787]    069F:                                       	@ROW2:
+[ 788]    069F: B4 C0                                 		MOV AH,0C0H
+[ 789]    06A1: EB 00                                 	JMP @LCD_SET_CUR_ENDCASE
+[ 790]        :                                       		
+[ 791]        :                                       ;execute the command
+[ 792]    06A3:                                       	@LCD_SET_CUR_ENDCASE:	
+[ 793]    06A3: 02 E6                                 	ADD AH,DH
+[ 794]    06A5: E8 79 FF                              	CALL LCD_CMD
+[ 795]        :                                       	
+[ 796]        :                                       ;exit from procedure
+[ 797]    06A8:                                       	@LCD_SET_CUR_END:
+[ 798]    06A8: 58                                    	POP AX
+[ 799]    06A9: C3                                    	RET
+[ 800]        :                                       ENDP LCD_SET_CUR
+[ 801]        :                                       
+[ 802]        :                                       ;----------------------------------
+[ 803]        :                                       ;CUSOR BLINKING
+[ 804]        :                                       ;input: none
+[ 805]        :                                       ;output: none
+[ 806]    06AA:                                       PROC LCD_SHOW_CUR
+[ 807]    06AA: 50                                    	PUSH AX
+[ 808]    06AB: B4 0F                                 	MOV AH,0FH      ;DISPLAY ON CUSOR BLINKING
+[ 809]    06AD: E8 71 FF                              	CALL LCD_CMD
+[ 810]    06B0: 58                                    	POP AX
+[ 811]    06B1: C3                                    	RET
+[ 812]        :                                       ENDP LCD_SHOW_CUR
+[ 813]        :                                       
+[ 814]        :                                       
+[ 815]        :                                       ;-----------------------------------
+[ 816]        :                                       ;Function to turn Cursor OFF
+[ 817]        :                                       ;input: none
+[ 818]        :                                       ;output: none
+[ 819]    06B2:                                       PROC LCD_HIDE_CUR
+[ 820]    06B2: 50                                    	PUSH AX
+[ 821]    06B3: B4 0C                                 	MOV AH,0CH       ;DISPLAY ON CUSOR OFF
+[ 822]    06B5: E8 69 FF                              	CALL LCD_CMD
+[ 823]    06B8: 58                                    	POP AX
+[ 824]    06B9: C3                                    	RET
+[ 825]        :                                       ENDP LCD_HIDE_CUR
+[ 826]        :                                       ;----------------------------------
+[ 827]        :                                       
+[ 828]        :                                       end main; End of program
+[ 829]        :                                       
+[ 830]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: BA      -   bytes on last page (l.byte)
+0003: 00      -   bytes on last page (h.byte)
+0004: 05      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 0B      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 80      -   SP - stack pointer (l.byte)
+0011: 00      -   SP - stack pointer (h.byte)
+0012: A6      -   check sum (l.byte)
+0013: 69      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 13      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 01      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 13      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================

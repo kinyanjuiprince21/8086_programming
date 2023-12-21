@@ -1,0 +1,29 @@
+< THE SYMBOL TABLE >  Assn 2. Guessing game.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+POOL                     	00103     	1         	VAR       	(NOSEG)   
+WIN                      	00140     	1         	VAR       	(NOSEG)   
+RESULT                   	00153     	1         	VAR       	(NOSEG)   
+ENTRY                    	0016D     	1         	VAR       	(NOSEG)   
+SPACE                    	00180     	1         	VAR       	(NOSEG)   
+TRIAL                    	00183     	1         	VAR       	(NOSEG)   
+TRIES                    	0018F     	1         	VAR       	(NOSEG)   
+P1                       	00190     	-1        	LABEL     	(NOSEG)   
+M1                       	00190     	1         	VAR       	(NOSEG)   
+L1                       	00191     	1         	VAR       	(NOSEG)   
+P11                      	00192     	1         	VAR       	(NOSEG)   
+CODE                     	00291     	-1        	LABEL     	(NOSEG)   
+BEGIN                    	00291     	-1        	LABEL     	(NOSEG)   
+COMP                     	002C9     	-1        	LABEL     	(NOSEG)   
+WORDEOL                  	002FB     	-1        	LABEL     	(NOSEG)   
+NOTEQUAL                 	00315     	-1        	LABEL     	(NOSEG)   
+RESET                    	00320     	-1        	LABEL     	(NOSEG)   
+POOLEND                  	00326     	-1        	LABEL     	(NOSEG)   
+INPUT                    	00360     	-1        	LABEL     	(NOSEG)   
+RESULTS                  	00371     	-1        	LABEL     	(NOSEG)   
+EXIT                     	00381     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 09/08/2023  --  14:41:05 ] 
+< END >
+ 

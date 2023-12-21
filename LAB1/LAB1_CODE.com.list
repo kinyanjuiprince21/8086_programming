@@ -1,0 +1,217 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+LAB1_CODE.com -- emu8086 assembler version: 4.08  
+ 
+[ 09/08/2023  --  14:13:41 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .MODEL small   ;Data and code<=64KB
+[   2]        :                                       org 100h  ;to set the assembler location counter.
+[   3]        :                                       
+[   4]        :                                       
+[   5]        :                                       .STACK 100     ;Initialize the stack
+[   6]    0100: E9 0A 01                              .DATA
+[   7]        :                                       ;Define a 10 X 10 array
+[   8]        :                                       ;db - define a byte (8)   -data diretive
+[   9]    0103: 01 02 03 04 05 06 07 08 09 00         array db 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+[  10]    010D: 02 03 04 05 06 07 08 09 00 01         db 2, 3, 4, 5, 6, 7, 8, 9, 0, 1
+[  11]    0117: 03 04 05 06 07 08 09 00 01 02         db 3, 4, 5, 6, 7, 8, 9, 0, 1, 2
+[  12]    0121: 04 05 06 07 08 09 00 01 02 03         db 4, 5, 6, 7, 8, 9, 0, 1, 2, 3
+[  13]    012B: 05 06 07 08 09 00 01 02 03 04         db 5, 6, 7, 8, 9, 0, 1, 2, 3, 4
+[  14]    0135: 06 07 08 09 00 01 02 03 04 05         db 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
+[  15]    013F: 07 08 09 00 01 02 03 04 05 06         db 7, 8, 9, 0, 1, 2, 3, 4, 5, 6
+[  16]    0149: 08 09 00 01 02 03 04 05 06 07         db 8, 9, 0, 1, 2, 3, 4, 5, 6, 7
+[  17]    0153: 09 00 01 02 03 04 05 06 07 08         db 9, 0, 1, 2, 3, 4, 5, 6, 7, 8
+[  18]    015D: 00 01 02 03 04 05 06 07 08 09         db 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+[  19]        :                                       
+[  20]        :                                       ;define the length of the array
+[  21]        :                                       ar_len EQU 10     ;constant
+[  22]        :                                       
+[  23]    0167: 0A 0D 45 6E 74 65 72 20 74 68 65 20   Input_ReqMsg1 db 10,13,"Enter the value of the Row of the Matrix:",10,13,"$"        ;10 is ascii code for newline, 13-cariage return
+                76 61 6C 75 65 20 6F 66 20 74 68 65 
+                20 52 6F 77 20 6F 66 20 74 68 65 20 
+                4D 61 74 72 69 78 3A 0A 0D 24       
+[  24]    0195: 0A 0D 45 6E 74 65 72 20 74 68 65 20   Input_ReqMsg2 db 10,13,"Enter the value of the Column of the Matrix:",10,13,"$"     ;$ indicates end of string
+                76 61 6C 75 65 20 6F 66 20 74 68 65 
+                20 43 6F 6C 75 6D 6E 20 6F 66 20 74 
+                68 65 20 4D 61 74 72 69 78 3A 0A 0D 
+                24                                  
+[  25]    01C6: 0A 0D 4B 65 79 20 69 6E 20 22 4E 65   Input_ReqMsg3 db 10,13,"Key in "New" to enter new value or "S" to halt.",10,13,"$"
+                77 22 20 74 6F 20 65 6E 74 65 72 20 
+                6E 65 77 20 76 61 6C 75 65 20 6F 72 
+                20 22 53 22 20 74 6F 20 68 61 6C 74 
+                2E 0A 0D 24                         
+[  26]    01FA: 0A 0D 24                              newline db 10,13,"$"
+[  27]        :                                       
+[  28]    01FD: 00                                    row    db ?       ;user input row value  =null value
+[  29]    01FE: 00                                    column db ?       ;user input column
+[  30]    01FF: 01                                    color  db 1        ;color index starting at blue
+[  31]        :                                       
+[  32]    0200: 4E 65 77 24                           New db "New$"
+[  33]    0204: 53 24                                 S   db "S$"
+[  34]        :                                       
+[  35]    0206: 05 00 20 20 20 20 20                  buffer   db  5,?,5 dup(" ")   ;to store user input of either
+[  36]        :                                       
+[  37]        :                                       ;----------------------------------------------------------------------
+[  38]        :                                       ;our defined macro to set cursor location
+[  39]        :                                       ;Name of Macro: GOTO_XY
+[  40]        :                                       ;Parameters: x cordinate, y cordinate
+[  41]        :                                       ;Output: NOne
+[  42]        :                                       GOTO_XY MACRO x,y
+[  43]        :                                       push dx
+[  44]        :                                       push bx
+[  45]        :                                       push ax
+[  46]        :                                       mov dh,y ;row
+[  47]        :                                       mov dl,x ;column
+[  48]        :                                       mov bh,0 ;page
+[  49]        :                                       mov ah,2
+[  50]        :                                       int 10h         ;interrupt to set cursor position
+[  51]        :                                       pop ax          ;LIFO
+[  52]        :                                       pop bx
+[  53]        :                                       pop dx
+[  54]        :                                       ENDM
+[  55]        :                                       ;------------------------------------------------------------------------
+[  56]        :                                       ;Delay macro/function
+[  57]        :                                       ;delay duration =2000000uS = 001E 8480H
+[  58]        :                                       delay_2s MACRO
+[  59]        :                                       mov ah, 86h          ;int 15h/ah=86h BIOS wait function.
+[  60]        :                                       mov cx, 001Eh        ;CX:DX = interval in microseconds
+[  61]        :                                       mov dx, 8480h
+[  62]        :                                       int 15h              ;BIOS wait function
+[  63]        :                                       ENDM
+[  64]        :                                       ;------------------------------------------------------------------------
+[  65]        :                                       
+[  66]    020D:                                       .CODE
+[  67]        :                                       
+[  68]    020D:                                       MAIN:
+[  69]        :                                       ;Initialize data segment REGISTER
+[  70]    020D: 8C C8                                 mov ax, @data
+[  71]    020F: 8E D8                                 mov ds,ax
+[  72]    0211: 8E C0                                 mov es,ax
+[  73]        :                                       ;---------------------
+[  74]        :                                       
+[  75]    0213:                                       start:
+[  76]        :                                       ;---------------------
+[  77]    0213: BE 03 01                              lea si,array ;get address of array
+[  78]        :                                       ;(mov si, offset array)-Alternatively
+[  79]        :                                       
+[  80]        :                                       ;Prompt row input
+[  81]    0216: BA 67 01                              lea dx,Input_ReqMsg1
+[  82]    0219: B4 09                                 mov ah, 9h
+[  83]    021B: CD 21                                 int 21h
+[  84]        :                                       
+[  85]    021D: B0 00                                 mov al,0
+[  86]        :                                       ;User row input
+[  87]    021F: B4 01                                 mov ah,1
+[  88]    0221: CD 21                                 int 21h
+[  89]    0223: 2C 30                                 sub al,30h    ;Convert ascii code to hex
+[  90]    0225: A2 FD 01                              mov row,al     ;store
+[  91]        :                                       
+[  92]        :                                       ;----------------------
+[  93]        :                                       ;Prompt column input
+[  94]    0228: BA 95 01                              lea dx,Input_ReqMsg2
+[  95]    022B: B4 09                                 mov ah,9h
+[  96]    022D: CD 21                                 int 21h
+[  97]        :                                       
+[  98]    022F: B0 00                                 mov al,0
+[  99]        :                                       ;User column input
+[ 100]    0231: B4 01                                 mov ah,1
+[ 101]    0233: CD 21                                 int 21h
+[ 102]    0235: 2C 30                                 sub al,30h
+[ 103]    0237: A2 FE 01                              mov column,al
+[ 104]        :                                       ;-----------------------
+[ 105]        :                                       ;Go to new line
+[ 106]    023A: BA FA 01                              lea dx,newline
+[ 107]    023D: B4 09                                 mov ah, 9h
+[ 108]    023F: CD 21                                 int 21h
+[ 109]        :                                       
+[ 110]        :                                       ;-----------------------------
+[ 111]    0241: E8 0F 00                              show:call show_element          ;
+[ 112]    0244: B4 86 B9 1E 00 BA 80 84 CD 15         delay_2s
+[ 113]    024E: E8 26 00                              call poll_keyboard
+[ 114]    0251: EB EE                                 jmp show
+[ 115]        :                                       ;-----------------------------------------------------------------------
+[ 116]    0253:                                       PROC show_element
+[ 117]        :                                       ;calculate element position in array
+[ 118]    0253: A0 FD 01                              mov al,row
+[ 119]    0256: BB 0A 00                              mov bx,10
+[ 120]    0259: F6 E3                                 mul bl         ;Result stored in ax=(al*bx)
+[ 121]    025B: 02 06 FE 01                           add al,column  ;result stored in al
+[ 122]    025F: 8A D8                                 mov bl,al
+[ 123]        :                                       
+[ 124]    0261: 8A 00                                 mov al,[si+bx]
+[ 125]    0263: 04 30                                 add al,30h       ;convert num to ascii
+[ 126]        :                                       
+[ 127]        :                                       ;goto_xy 40,12       ; To display at the center of the screen
+[ 128]        :                                       ;print in color
+[ 129]    0265: B4 09                                 mov ah,9
+[ 130]    0267: B7 00                                 mov bh,0        ;page
+[ 131]    0269: 8A 1E FF 01                           mov bl,color    ;color
+[ 132]    026D: B9 01 00                              mov cx,1        ;number of time to print the character
+[ 133]    0270: CD 10                                 int 10h         ;print char in AL
+[ 134]        :                                       
+[ 135]        :                                       ;Increment color value
+[ 136]        :                                       ;mov cl,1
+[ 137]    0272: 00 0E FF 01                           add color,cl
+[ 138]    0276: C3                                    ret
+[ 139]        :                                       ENDP
+[ 140]        :                                       ;----------------------------------------------------
+[ 141]    0277:                                       proc poll_keyboard
+[ 142]    0277: B4 01                                 mov ah,01h
+[ 143]    0279: CD 16                                 int 16h            ;check for keystroke
+[ 144]    027B: 75 01                                 jnz userInterrupt  ;if
+[ 145]    027D: C3                                    ret
+[ 146]        :                                       endp
+[ 147]        :                                       ;-----------------------------------------------------
+[ 148]    027E:                                       proc userInterrupt
+[ 149]    027E: BA C6 01                              lea dx,Input_ReqMsg3 ;prompt user input on interupt
+[ 150]    0281: B4 09                                 mov ah, 9h
+[ 151]    0283: CD 21                                 int 21h
+[ 152]        :                                       
+[ 153]        :                                       ;User to input either New or s
+[ 154]    0285: BA 06 02                              mov dx, offset buffer
+[ 155]    0288: B4 0A                                 mov ah, 0ah
+[ 156]    028A: CD 21                                 int 21h              ;enter string
+[ 157]        :                                       
+[ 158]    028C:                                       Compare_new:
+[ 159]    028C: FC                                    cld                         ;clear direction flag
+[ 160]    028D: BE 00 02                              mov si,offset New           ;string(New) moved to SI
+[ 161]    0290: BF 08 02                              mov di,offset buffer+2      ;input stored in DI
+[ 162]    0293: B9 03 00                              mov cx,3                    ;compare 3 characters
+[ 163]    0296: F3 A6                                 repe cmpsb                  ;compares strings in the source and destination
+[ 164]    0298: 75 03 E9 76 FF                        je start
+[ 165]    029D: 75 00                                 jne compare_S
+[ 166]        :                                       
+[ 167]    029F:                                       Compare_S:
+[ 168]    029F: FC                                    cld                         ;clear direction flag
+[ 169]    02A0: BE 04 02                              mov si,offset S             ;string(New) moved to SI
+[ 170]    02A3: BF 08 02                              mov di,offset buffer+2      ;input stored in DI
+[ 171]    02A6: B9 01 00                              mov cx,1
+[ 172]    02A9: F3 A6                                 repe cmpsb                  ;compares strings in the source and destination
+[ 173]    02AB: 74 03                                 je stop
+[ 174]    02AD: 75 CF                                 jne userInterrupt
+[ 175]    02AF: C3                                    ret
+[ 176]        :                                       endp
+[ 177]        :                                       ;--------------------------------------------------------
+[ 178]        :                                       
+[ 179]    02B0:                                       stop:
+[ 180]    02B0: 52 53 50 B6 00 B2 00 B7 00 B4 02 CD   GOTO_XY 0,0
+                10 58 5B 5A                         
+[ 181]    02C0: E8 90 FF                              call show_element
+[ 182]    02C3: B4 86 B9 1E 00 BA 80 84 CD 15         delay_2s
+[ 183]    02CD: B4 4C                                 mov ah, 4ch
+[ 184]    02CF: CD 21                                 int 21h
+[ 185]        :                                       ;------------------------------------------------------------------------------------------------------------
+[ 186]        :                                       
+[ 187]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
